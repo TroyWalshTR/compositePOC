@@ -16,11 +16,13 @@ Select either test workflow in the Actions tab and choose **Run workflow**.
 Both accept `browser` (`chromium`, `firefox`, or `webkit`, default `chromium`)
 and `grep` (a test-title regular expression, empty by default).
 
-Both also run after the **Trigger tests** push workflow completes successfully.
-These `workflow_run` executions use the triggering commit, default inputs, and
-only accept push runs from this repository. GitHub requires the test workflow
-files to exist on the default branch before `workflow_run` events can start them.
-Neither test workflow triggers the other.
+Both also run after the **Trigger tests** push workflow completes successfully
+on this repository's default branch. These `workflow_run` executions use default
+inputs and the trusted default-branch revision (`github.sha`), not an upstream
+branch's code, because `workflow_run` has a privileged execution context. Manual
+runs use the selected branch's revision. GitHub requires the test workflow files
+to exist on the default branch before `workflow_run` events can start them.
+Neither test workflow triggers the other. Dependency caching is disabled.
 
 Summaries and the `test-results` artifact (HTML report and failure traces) are
 published even when tests fail. The job still fails if tests fail. Artifacts
