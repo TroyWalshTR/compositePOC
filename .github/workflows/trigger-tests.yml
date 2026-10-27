@@ -1,0 +1,11 @@
+name: Trigger tests
+
+on: push
+
+permissions: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Both test workflows will run when this workflow completes."

@@ -1,0 +1,35 @@
+name: Setup Composite
+description: Download the source, install npm dependencies, and set up Playwright.
+inputs:
+  ref:
+    description: Git ref to check out.
+    required: false
+    default: ${{ github.sha }}
+  browser:
+    description: Playwright browser to install (chromium, firefox, or webkit).
+    required: false
+    default: chromium
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v7.0.1
+      with:
+        ref: ${{ inputs.ref }}
+        persist-credentials: false
+    - uses: actions/setup-node@v7.1.0
+      with:
+        node-version: '24'
+        cache: npm
+    - name: Install npm dependencies
+      shell: bash
+      run: npm ci
+    - name: Set up Playwright
+      shell: bash
+      env:
+        BROWSER: ${{ inputs.browser }}
+      run: |
+        case "$BROWSER" in
+          chromium|firefox|webkit) ;;
+          *) echo "Unsupported browser"; exit 1 ;;
+        esac
+        npx playwright install --with-deps "$BROWSER"

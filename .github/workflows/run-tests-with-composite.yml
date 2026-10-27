@@ -1,0 +1,54 @@
+name: Run tests with composite
+
+on:
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: Playwright browser
+        type: choice
+        options: [chromium, firefox, webkit]
+        default: chromium
+      grep:
+        description: Test title regular expression (empty runs all tests)
+        type: string
+        default: ''
+  workflow_run:
+    workflows: [Trigger tests]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BROWSER: ${{ inputs.browser || 'chromium' }}
+      GREP: ${{ inputs.grep || '' }}
+    steps:
+      - name: Download local composite actions
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+      - name: Setup Composite
+        uses: ./.github/actions/setup
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          browser: ${{ env.BROWSER }}
+      - name: Run tests
+        id: tests
+        run: npm test -- --project="$BROWSER" --grep="$GREP"
+      - name: Report Composite
+        if: always()
+        uses: ./.github/actions/report
+        with:
+          browser: ${{ env.BROWSER }}
+          grep: ${{ env.GREP }}
+          outcome: ${{ steps.tests.outcome }}
