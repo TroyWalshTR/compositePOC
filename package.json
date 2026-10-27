@@ -1,0 +1,20 @@
+{
+  "name": "compositepoc",
+  "version": "1.0.0",
+  "description": "Standalone and composite GitHub Actions for Playwright tests",
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TroyWalshTR/compositePOC.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}

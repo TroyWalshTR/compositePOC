@@ -1,0 +1,37 @@
+name: Report Composite
+description: Write test results and input parameters to the summary and upload reports.
+inputs:
+  browser:
+    description: Browser used for the test run.
+    required: true
+  grep:
+    description: Test title filter used for the test run.
+    required: false
+    default: ''
+  outcome:
+    description: Outcome of the test step.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Write test summary
+      shell: bash
+      env:
+        TEST_OUTCOME: ${{ inputs.outcome }}
+        BROWSER: ${{ inputs.browser }}
+        GREP: ${{ inputs.grep }}
+      run: |
+        {
+          printf '## Test results\n\nOutcome: %s\n\n### Input parameters\n\n' "$TEST_OUTCOME"
+          node -e 'console.log(JSON.stringify({browser: process.env.BROWSER, grep: process.env.GREP}, null, 2))' | sed 's/^/    /'
+        } >> "$GITHUB_STEP_SUMMARY"
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v7.0.2
+      with:
+        name: test-results
+        path: |
+          playwright-report/
+          test-results/
+        if-no-files-found: warn
+        retention-days: 7
